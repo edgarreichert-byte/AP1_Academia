@@ -1,6 +1,4 @@
-<<<<<<< HEAD
-# AP1_Academia
-=======
+
 # AP1_Academia
 
 API REST minimalista para gerenciamento de personais de uma academia, desenvolvida com ASP.NET Core e .NET 10.
@@ -104,5 +102,3 @@ Remove o personal correspondente ao ID informado.
 * O cadastro retorna HTTP `201 Created`.
 * A remoção bem-sucedida retorna HTTP `204 No Content`.
 * A API utiliza endpoints REST para realizar operações de consulta, cadastro, atualização e exclusão de personais.
-
->>>>>>> 5b146efe2454c6fb914d66339528911f27b34329
