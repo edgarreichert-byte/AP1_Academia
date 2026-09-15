@@ -1,0 +1,16 @@
+info:
+  name: AddPersonal
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: http://localhost:5098/api/personal
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
