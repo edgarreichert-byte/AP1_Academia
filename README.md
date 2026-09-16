@@ -102,3 +102,7 @@ Remove o personal correspondente ao ID informado.
 * O cadastro retorna HTTP `201 Created`.
 * A remoção bem-sucedida retorna HTTP `204 No Content`.
 * A API utiliza endpoints REST para realizar operações de consulta, cadastro, atualização e exclusão de personais.
+
+## Link do Video Demonstração:
+  https://drive.google.com/file/d/1WZ-vwlB7B3INtQ_5DtNhAguz5lBUuRTk/view?usp=sharing
+
