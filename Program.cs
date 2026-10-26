@@ -1,7 +1,20 @@
-using System.Text.Json;
+
+
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<ApiDbContext>(options =>
+    options.UseSqlite(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+    )
+);
+
 var app = builder.Build();
+
+// Disponibilizar a interface da pasta wwwroot
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 var personais = new List<Personal>
 {
@@ -11,14 +24,16 @@ var personais = new List<Personal>
 
 app.MapGet("/", () => "Academia");
 
-app.MapGet("/api/personal", () =>
+app.MapGet("/api/personal", async (ApiDbContext db) =>
 {
+    var personais = await db.Personais.ToListAsync();
+
     return Results.Ok(personais);
 });
 
-app.MapGet("/api/personal/{id:int}", (int id) =>
+app.MapGet("/api/personal/{id:int}", async (int id, ApiDbContext db) =>
 {
-    var personalEncontrado = personais.Find(personal => personal.id == id);
+    var personalEncontrado = await db.Personais.FindAsync(id);
 
     if (personalEncontrado is null)
     {
@@ -28,51 +43,75 @@ app.MapGet("/api/personal/{id:int}", (int id) =>
     return Results.Ok(personalEncontrado);
 });
 
-app.MapPost("/api/personal", (PersonalDTO dados) =>
+app.MapPost("/api/personal", async (AcademiaPersonaisEntity dados, ApiDbContext db) =>
 {
-    int proximoId = personais.Count + 1;
+    db.Personais.Add(dados);
 
-    var novoPersonal = new Personal(proximoId, dados.nome, true);
+    await db.SaveChangesAsync();
 
-    personais.Add(novoPersonal);
-
-    return Results.Created($"/api/personais/{novoPersonal.id}", novoPersonal);
+    return Results.Created(
+        $"/api/personal/{dados.id}",
+        dados
+    );
 });
 
-app.MapPut("/api/personais/{id:int}", (int id, PersonalAtualizadoDTO dados) =>
+// PUT - Atualizar um personal no banco
+app.MapPut("/api/personal/{id:int}", async (int id, PersonalAtualizadoDTO dados, ApiDbContext db) =>
 {
-    int indice = personais.FindIndex(personalDaLista => personalDaLista.id == id);
+    var personalEncontrado = await db.Personais.FindAsync(id);
 
-    if (indice == -1)
+    if (personalEncontrado is null)
     {
         return Results.NotFound();
     }
 
-    var atualizado = new Personal(id, dados.nome, dados.disponivel);
-    personais[indice] = atualizado;
+    personalEncontrado.Nome = dados.nome;
+    personalEncontrado.tipo = dados.tipo;
 
-    return Results.Ok(atualizado);
+    await db.SaveChangesAsync();
+
+    return Results.Ok(personalEncontrado);
 });
 
-app.MapDelete("/api/personais/{id:int}", (int id) =>
+// DELETE - Excluir um personal do banco
+app.MapDelete("/api/personal/{id:int}", async (int id, ApiDbContext db) =>
 {
-    int indice = personais.FindIndex(personalDaLista => personalDaLista.id == id);
+    var personalEncontrado = await db.Personais.FindAsync(id);
 
-    if (indice == -1)
+    if (personalEncontrado is null)
     {
         return Results.NotFound();
     }
 
-    personais.RemoveAt(indice);
+    db.Personais.Remove(personalEncontrado);
+
+    await db.SaveChangesAsync();
 
     return Results.NoContent();
 });
 
-
 app.Run();
+
+class AcademiaPersonaisEntity
+{
+    public int id { get; set; }
+    public string Nome { get; set; }
+    public string tipo { get; set; }
+}
+
+class ApiDbContext : DbContext
+{
+    public ApiDbContext(DbContextOptions<ApiDbContext> options)
+        : base(options)
+    {
+    }
+
+    public DbSet<AcademiaPersonaisEntity> Personais
+        => Set<AcademiaPersonaisEntity>();
+}
 
 record Personal(int id, string nome, bool disponivel);
 
 record PersonalDTO(string nome);
 
-record PersonalAtualizadoDTO(string nome, bool disponivel);
+record PersonalAtualizadoDTO(string nome, string tipo);
