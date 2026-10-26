@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Academia FitPro - Gestão de Personais Trainers</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">🏋️‍♂️</span>
+        <div>
+          <h1>Academia FitPro</h1>
+          <p class="subtitle">Módulo de Gestão de Personais Trainers &bull; Integrado à API</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Banner de Conexão com a API -->
+  <aside class="demo-banner" role="status" aria-label="Status de integração com a API">
+    <div class="demo-badge">API CONECTADA</div>
+    <div class="demo-text">
+      Operando em integração direta com a API REST em <code>/api/personal</code>. As alterações são persistidas no banco de dados.
+    </div>
+  </aside>
+
+  <main class="main-container">
+    <!-- Mensagens de Feedback Global -->
+    <div id="toast-message" class="toast" role="alert" aria-live="assertive" hidden></div>
+
+    <div class="content-grid">
+      <!-- Seção do Formulário -->
+      <section class="card form-section" aria-labelledby="form-heading">
+        <div class="card-header">
+          <h2 id="form-heading">Novo Personal</h2>
+          <span id="form-mode-badge" class="mode-badge mode-create">Modo: Cadastro</span>
+        </div>
+
+        <form id="personal-form" novalidate>
+          <input type="hidden" id="personal-id" name="id">
+
+          <div class="form-group">
+            <label for="personal-id-display">Código de Identificação (ID)</label>
+            <input 
+              type="text" 
+              id="personal-id-display" 
+              class="form-control" 
+              value="Gerado automaticamente pela API" 
+              readonly 
+              aria-describedby="id-help"
+            >
+            <small id="id-help" class="form-help">O ID é gerado automaticamente pelo banco de dados ao salvar.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="personal-nome">
+              Nome do Personal <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="personal-nome" 
+              name="nome" 
+              class="form-control" 
+              placeholder="Ex: Carlos Silva" 
+              required
+              aria-required="true"
+              maxlength="60"
+              autocomplete="off"
+            >
+            <small id="nome-error" class="error-message" hidden></small>
+          </div>
+
+          <div class="form-group">
+            <label for="personal-tipo">
+              Tipo / Especialidade <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="personal-tipo" 
+              name="tipo" 
+              class="form-control" 
+              placeholder="Ex: Musculação, Funcional, Crossfit..." 
+              required
+              aria-required="true"
+              maxlength="40"
+              autocomplete="off"
+            >
+            <small id="tipo-error" class="error-message" hidden></small>
+            <small class="form-help">Informe a especialidade ou modalidade do personal trainer.</small>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="btn-submit" class="btn btn-primary">
+              <span id="btn-submit-icon" aria-hidden="true">➕</span>
+              <span id="btn-submit-text">Adicionar Personal</span>
+            </button>
+            <button type="button" id="btn-reset" class="btn btn-secondary">
+              Limpar / Cancelar
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Seção da Listagem -->
+      <section class="card list-section" aria-labelledby="list-heading">
+        <div class="card-header list-header">
+          <div>
+            <h2 id="list-heading">Personais Cadastrados</h2>
+            <p class="subtitle" id="record-count">Carregando personais...</p>
+          </div>
+          <button type="button" id="btn-novo" class="btn btn-outline" title="Iniciar novo cadastro no formulário">
+            + Novo Cadastro
+          </button>
+        </div>
+
+        <!-- Filtros e Busca -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label for="search-input" class="sr-only">Filtrar por nome ou tipo</label>
+            <input 
+              type="search" 
+              id="search-input" 
+              class="form-control filter-input" 
+              placeholder="🔍 Buscar por nome ou tipo..."
+              aria-label="Buscar personal por nome ou tipo"
+            >
+          </div>
+          <div class="filter-group">
+            <label for="filter-tipo" class="sr-only">Filtrar por tipo</label>
+            <select id="filter-tipo" class="form-control filter-select" aria-label="Filtrar por tipo">
+              <option value="all">Todos os tipos</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Tabela Responsiva de Personais -->
+        <div class="table-container" tabindex="0" role="region" aria-label="Tabela de personais">
+          <!-- Indicador de Carregamento -->
+          <div id="loading-state" class="loading-state" hidden>
+            <span class="loading-spinner" aria-hidden="true">⏳</span>
+            <p class="loading-text">Carregando dados da API...</p>
+          </div>
+
+          <table class="data-table" id="personais-table">
+            <thead>
+              <tr>
+                <th scope="col" class="col-id">ID</th>
+                <th scope="col" class="col-nome">Nome</th>
+                <th scope="col" class="col-tipo">Tipo / Especialidade</th>
+                <th scope="col" class="col-actions">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="personais-tbody">
+              <!-- Linhas geradas dinamicamente pelo app.js -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mensagem de lista vazia -->
+        <div id="empty-state" class="empty-state" hidden>
+          <span class="empty-icon" aria-hidden="true">📋</span>
+          <p class="empty-title">Nenhum personal encontrado</p>
+          <p class="empty-desc" id="empty-desc">Cadastre um novo personal usando o formulário ao lado.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Modal de Confirmação para Remoção -->
+  <dialog id="delete-dialog" class="modal-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-desc">
+    <div class="dialog-content">
+      <h3 id="dialog-title">Confirmar Remoção</h3>
+      <p id="dialog-desc">
+        Tem certeza que deseja remover o personal <strong id="delete-target-name"></strong> do banco de dados?
+      </p>
+      <div class="dialog-actions">
+        <button type="button" id="btn-cancel-delete" class="btn btn-secondary">Cancelar</button>
+        <button type="button" id="btn-confirm-delete" class="btn btn-danger">Sim, Deletar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <footer class="app-footer">
+    <p>Academia FitPro &bull; Gestão de Personais &bull; Conectado à API REST</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
