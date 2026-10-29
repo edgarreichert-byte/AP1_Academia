@@ -123,3 +123,6 @@ Se a remoção for realizada, retorna HTTP `204 No Content`. Caso o personal nã
 ## Link do Vídeo de Demonstração
 
 https://drive.google.com/file/d/1WZ-vwlB7B3INtQ_5DtNhAguz5lBUuRTk/view?usp=sharing
+
+## Link Parte 2
+https://drive.google.com/file/d/12LpypeNMjWtnK4iqfq8STAbt_7MjNTGn/view?usp=sharing
