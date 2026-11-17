@@ -1,6 +1,7 @@
-
-
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using ApiAcademia.Models;
+using ApiAcademia.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,15 +13,22 @@ builder.Services.AddDbContext<ApiDbContext>(options =>
 
 var app = builder.Build();
 
-// Disponibilizar a interface da pasta wwwroot
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "application/json";
+
+        await context.Response.WriteAsJsonAsync(new
+        {
+            mensagem = "Ocorreu um erro interno. Tente novamente mais tarde."
+        });
+    });
+});
+
 app.UseDefaultFiles();
 app.UseStaticFiles();
-
-var personais = new List<Personal>
-{
-    new Personal(1, "Carlos", true),
-    new Personal(2, "Fernanda", false)
-};
 
 app.MapGet("/", () => "Academia");
 
@@ -55,8 +63,7 @@ app.MapPost("/api/personal", async (AcademiaPersonaisEntity dados, ApiDbContext 
     );
 });
 
-// PUT - Atualizar um personal no banco
-app.MapPut("/api/personal/{id:int}", async (int id, PersonalAtualizadoDTO dados, ApiDbContext db) =>
+app.MapPut("/api/personal/{id:int}", async (int id, AcademiaPersonaisEntity dados, ApiDbContext db) =>
 {
     var personalEncontrado = await db.Personais.FindAsync(id);
 
@@ -65,7 +72,7 @@ app.MapPut("/api/personal/{id:int}", async (int id, PersonalAtualizadoDTO dados,
         return Results.NotFound();
     }
 
-    personalEncontrado.Nome = dados.nome;
+    personalEncontrado.Nome = dados.Nome;
     personalEncontrado.tipo = dados.tipo;
 
     await db.SaveChangesAsync();
@@ -73,7 +80,6 @@ app.MapPut("/api/personal/{id:int}", async (int id, PersonalAtualizadoDTO dados,
     return Results.Ok(personalEncontrado);
 });
 
-// DELETE - Excluir um personal do banco
 app.MapDelete("/api/personal/{id:int}", async (int id, ApiDbContext db) =>
 {
     var personalEncontrado = await db.Personais.FindAsync(id);
@@ -91,27 +97,3 @@ app.MapDelete("/api/personal/{id:int}", async (int id, ApiDbContext db) =>
 });
 
 app.Run();
-
-class AcademiaPersonaisEntity
-{
-    public int id { get; set; }
-    public string Nome { get; set; }
-    public string tipo { get; set; }
-}
-
-class ApiDbContext : DbContext
-{
-    public ApiDbContext(DbContextOptions<ApiDbContext> options)
-        : base(options)
-    {
-    }
-
-    public DbSet<AcademiaPersonaisEntity> Personais
-        => Set<AcademiaPersonaisEntity>();
-}
-
-record Personal(int id, string nome, bool disponivel);
-
-record PersonalDTO(string nome);
-
-record PersonalAtualizadoDTO(string nome, string tipo);
