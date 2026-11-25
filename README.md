@@ -237,6 +237,8 @@ https://drive.google.com/file/d/1WZ-vwlB7B3INtQ_5DtNhAguz5lBUuRTk/view?usp=shari
 
 https://drive.google.com/file/d/12LpypeNMjWtnK4iqfq8STAbt_7MjNTGn/view?usp=sharing
 
+## Link Parte 3
+https://drive.google.com/file/d/1DPtvfPWa0z_VVtZ6ExMGx3ndOeHcygvy/view?usp=sharing
 ---
 
 **Projeto:** AP1_Academia
